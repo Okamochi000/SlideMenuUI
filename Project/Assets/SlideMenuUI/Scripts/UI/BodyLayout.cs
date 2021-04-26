@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 /// <summary>
 /// ノッジレイアウト
@@ -50,10 +51,15 @@ public class BodyLayout : MonoBehaviour
         selfRectTransform_.offsetMin = Vector2.zero;
         selfRectTransform_.offsetMax = Vector2.zero;
 
+        // スケーリング
+        float scale = 1.0f;
+        CanvasScaler scaler = GetParentCanvasScaler(this.transform);
+        if (scaler != null && scaler.uiScaleMode == CanvasScaler.ScaleMode.ScaleWithScreenSize) { scale = scaler.referenceResolution.y / resolition.height; }
+
         // ヘッダー設定
         if (isHeaderNodgeOnly)
         {
-            selfRectTransform_.offsetMax = new Vector2(0, area.yMax - resolition.height);
+            selfRectTransform_.offsetMax = new Vector2(0, (area.yMax - resolition.height) * scale);
         }
         else
         {
@@ -68,7 +74,7 @@ public class BodyLayout : MonoBehaviour
         // フッター設定
         if (isFooterNodgeOnly)
         {
-            selfRectTransform_.offsetMin = new Vector2(0, area.yMin);
+            selfRectTransform_.offsetMin = new Vector2(0, area.yMin * scale);
         }
         else
         {
@@ -79,5 +85,18 @@ public class BodyLayout : MonoBehaviour
                 selfRectTransform_.offsetMin = new Vector2(0, footer.sizeDelta.y);
             }
         }
+    }
+
+    /// <summary>
+    /// 親キャンバスを取得する
+    /// </summary>
+    /// <returns></returns>
+    private CanvasScaler GetParentCanvasScaler(Transform transform)
+    {
+        if (transform.parent == null) { return null; }
+
+        CanvasScaler canvas = transform.parent.GetComponent<CanvasScaler>();
+        if (canvas == null) { return GetParentCanvasScaler(this.transform.parent); }
+        else { return canvas; }
     }
 }

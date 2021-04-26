@@ -47,10 +47,13 @@ public class NodgeLayout : MonoBehaviour
     {
         if (nodge != null)
         {
+            float scale = 1.0f;
+            CanvasScaler scaler = GetParentCanvasScaler(this.transform);
             var resolition = Screen.currentResolution;
+            if (scaler != null && scaler.uiScaleMode == CanvasScaler.ScaleMode.ScaleWithScreenSize) { scale = scaler.referenceResolution.y / resolition.height; }
             Vector2 sizeDelta = nodge.sizeDelta;
-            if (type == LayoutType.Header) { sizeDelta.y = resolition.height - Screen.safeArea.yMax; }
-            else if (type == LayoutType.Footer) { sizeDelta.y = Screen.safeArea.yMin; }
+            if (type == LayoutType.Header) { sizeDelta.y = (resolition.height - Screen.safeArea.yMax) * scale; }
+            else if (type == LayoutType.Footer) { sizeDelta.y = Screen.safeArea.yMin * scale; }
             nodge.sizeDelta = sizeDelta;
             VerticalLayoutGroup layoutGroup = this.GetComponent<VerticalLayoutGroup>();
             layoutGroup.SetLayoutHorizontal();
@@ -59,5 +62,18 @@ public class NodgeLayout : MonoBehaviour
             layoutGroup.CalculateLayoutInputVertical();
             this.GetComponent<ContentSizeFitter>().SetLayoutVertical();
         }
+    }
+
+    /// <summary>
+    /// 親キャンバスを取得する
+    /// </summary>
+    /// <returns></returns>
+    private CanvasScaler GetParentCanvasScaler(Transform transform)
+    {
+        if (transform.parent == null) { return null; }
+
+        CanvasScaler canvas = transform.parent.GetComponent<CanvasScaler>();
+        if (canvas == null) { return GetParentCanvasScaler(this.transform.parent); }
+        else { return canvas; }
     }
 }
