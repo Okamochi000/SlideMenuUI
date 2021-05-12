@@ -79,7 +79,7 @@ public class LogChecker : MonoBehaviourSingleton<LogChecker>
 
         // ログ登録
         LogInfo logInfo = new LogInfo(logText, stackTrace, type);
-        if (type != LogType.Log && type !!= LogType.Warning && firstErrorLogInfo == null) { firstErrorLogInfo = logInfo; }
+        if (type != LogType.Log && type != LogType.Warning && firstErrorLogInfo == null) { firstErrorLogInfo = logInfo; }
         if (logQueue.Count == LogCountMax) { logQueue.Dequeue(); }
         logQueue.Enqueue(logInfo);
 
