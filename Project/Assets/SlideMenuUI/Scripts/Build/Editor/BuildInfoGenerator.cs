@@ -28,14 +28,16 @@ public class BuildInfoGenerator : IPreprocessBuildWithReport, IPostprocessBuildW
         var json = JsonUtility.ToJson(buildInfo, false);
 
         // JSONデータをファイルに保存
-        File.WriteAllText(BuildInfoPath, json);
+        if (File.Exists(BuildInfoPath)) { File.WriteAllText(BuildInfoPath, json); }
+        else { Debug.Log(BuildInfoPath + "が見つかりませんでした"); }
     }
 
     /// ビルド後処理
     public void OnPostprocessBuild(BuildReport _report)
     {
         // ファイルの中身を削除する
-        File.WriteAllText(BuildInfoPath, "");
+        if (File.Exists(BuildInfoPath)) { File.WriteAllText(BuildInfoPath, ""); }
+        else { Debug.Log(BuildInfoPath + "が見つかりませんでした"); }
     }
 
     // 開発モードか

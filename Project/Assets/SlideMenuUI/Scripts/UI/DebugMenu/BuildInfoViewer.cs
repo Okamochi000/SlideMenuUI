@@ -50,15 +50,12 @@ public class BuildInfoViewer : MonoBehaviour
 
         // ビルド情報取得
         BuildInfo buildInfo = null;
-        if (Application.isEditor)
-        {
-            buildInfo = BuildInfo.LoadEditorBuildInfo();
-        }
-        else
-        {
-            TextAsset textAsset = Resources.Load<TextAsset>("build_info");
-            buildInfo = JsonUtility.FromJson<BuildInfo>(textAsset.text);
-        }
+#if UNITY_EDITOR
+        buildInfo = BuildInfo.LoadEditorBuildInfo();
+#else
+        TextAsset textAsset = Resources.Load<TextAsset>("build_info");
+        buildInfo = JsonUtility.FromJson<BuildInfo>(textAsset.text);
+#endif
 
         // ビルド情報設定
         versionText.text = Application.version;
