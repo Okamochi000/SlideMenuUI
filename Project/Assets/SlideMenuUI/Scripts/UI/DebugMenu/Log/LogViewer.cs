@@ -108,7 +108,8 @@ public class LogViewer : MonoBehaviour
     {
         // ログ追加
         GameObject log = GameObject.Instantiate(logBase);
-        log.transform.SetParent(logBase.transform.parent, true);
+        log.transform.SetParent(logBase.transform.parent, false);
+        log.transform.localScale = Vector3.one;
         log.SetActive(true);
         LogText logText = log.GetComponent<LogText>();
         logText.SetLog(logInfo);
