@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,6 +5,7 @@ using UnityEngine.UI;
 /// ノッジレイアウト
 /// </summary>
 [ExecuteInEditMode]
+[ExecuteAlways]
 public class BodyLayout : MonoBehaviour
 {
     [SerializeField] private RectTransform header = null;
@@ -18,6 +17,7 @@ public class BodyLayout : MonoBehaviour
     private Vector2 screenSize_ = new Vector2();
     private Vector2 prevHeader_ = Vector2.zero;
     private Vector2 prevFooter_ = Vector2.zero;
+    private bool isChangedValidate_ = false;
 
     void Start()
     {
@@ -27,7 +27,14 @@ public class BodyLayout : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // 更新チェック
+        // インスペクター更新チェック
+        if (isChangedValidate_)
+        {
+            isChangedValidate_ = false;
+            UpdateNodge();
+        }
+
+        // 解像度更新チェック
         if (screenSize_.x == Screen.currentResolution.width && screenSize_.y == Screen.currentResolution.height)
         {
             if (header == null || prevHeader_ == header.rect.size)
@@ -117,6 +124,6 @@ public class BodyLayout : MonoBehaviour
     /// </summary>
     private void OnValidate()
     {
-        UpdateNodge();
+        isChangedValidate_ = true;
     }
 }
