@@ -1,13 +1,19 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
+using UnityEditor;
 
 /// <summary>
 /// ノッジレイアウト
 /// </summary>
-[ExecuteInEditMode]
+[DisallowMultipleComponent]
 [ExecuteAlways]
-public class BodyLayout : MonoBehaviour
+public class BodyLayout : UIBehaviour
 {
+    public bool IsUpdating { get; private set; } = false;
+    public Action tempUpdatedCallback = null;
+
     [SerializeField] private RectTransform header = null;
     [SerializeField] private RectTransform footer = null;
     [SerializeField] private bool isHeaderNodgeOnly = false;
@@ -19,45 +25,60 @@ public class BodyLayout : MonoBehaviour
     private Vector2 prevFooter_ = Vector2.zero;
     private bool isChangedValidate_ = false;
 
-    void Start()
+    protected override void Start()
     {
         UpdateNodge();
     }
 
     // Update is called once per frame
-    void Update()
+    protected void Update()
     {
-        // インスペクター更新チェック
         if (isChangedValidate_)
         {
-            isChangedValidate_ = false;
             UpdateNodge();
         }
+    }
 
-        // 解像度更新チェック
-        if (screenSize_.x == Screen.currentResolution.width && screenSize_.y == Screen.currentResolution.height)
-        {
-            if (header == null || prevHeader_ == header.rect.size)
-            {
-                if (footer == null || prevFooter_ == footer.rect.size)
-                {
-                    return;
-                }
-            }
-        }
+    protected override void OnEnable()
+    {
+        RectTransform rectTransform = this.GetComponent<RectTransform>();
+        rectTransform.hideFlags = HideFlags.NotEditable;
+    }
 
-        // 更新
+    protected override void OnDisable()
+    {
+        RectTransform rectTransform = this.GetComponent<RectTransform>();
+        rectTransform.hideFlags = HideFlags.None;
+    }
+
+    protected override void OnRectTransformDimensionsChange()
+    {
         UpdateNodge();
     }
+
+#if UNITY_EDITOR
+    /// <summary>
+    /// インスペクター変更検知
+    /// </summary>
+    protected override void OnValidate()
+    {
+        isChangedValidate_ = true;
+    }
+#endif
 
     /// <summary>
     /// ノッジを更新する
     /// </summary>
     private void UpdateNodge()
     {
+        if (IsUpdating) { return; }
+        IsUpdating = true;
+        isChangedValidate_ = false;
+
         if (selfRectTransform_ == null) { selfRectTransform_ = this.GetComponent<RectTransform>(); }
         var resolition = Screen.currentResolution;
         var area = Screen.safeArea;
+        selfRectTransform_.pivot = new Vector2(0.5f, 0.5f);
         selfRectTransform_.anchorMin = Vector2.zero;
         selfRectTransform_.anchorMax = Vector2.one;
         selfRectTransform_.offsetMin = Vector2.zero;
@@ -104,6 +125,14 @@ public class BodyLayout : MonoBehaviour
         else { prevHeader_ = header.rect.size; }
         if (footer == null) { prevFooter_ = Vector2.zero; }
         else { prevFooter_ = footer.rect.size; }
+
+        if (tempUpdatedCallback != null)
+        {
+            tempUpdatedCallback();
+            tempUpdatedCallback = null;
+        }
+
+        IsUpdating = false;
     }
 
     /// <summary>
@@ -115,15 +144,7 @@ public class BodyLayout : MonoBehaviour
         if (transform.parent == null) { return null; }
 
         CanvasScaler canvas = transform.parent.GetComponent<CanvasScaler>();
-        if (canvas == null) { return GetParentCanvasScaler(this.transform.parent); }
+        if (canvas == null) { return GetParentCanvasScaler(transform.parent); }
         else { return canvas; }
-    }
-
-    /// <summary>
-    /// インスペクター変更検知
-    /// </summary>
-    private void OnValidate()
-    {
-        isChangedValidate_ = true;
     }
 }
